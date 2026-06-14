@@ -17,27 +17,31 @@ export default function Home() {
 
   // Trips data (persisted in localStorage)
   const [trips, setTrips] = useState(() => {
-    const stored = localStorage.getItem("trips");
+    const stored = typeof window !== "undefined" ? localStorage.getItem("trips") : null;
     return stored ? JSON.parse(stored) : [];
   });
   const [activeTripId, setActiveTripId] = useState(() => {
-    const stored = localStorage.getItem("activeTripId");
+    const stored = typeof window !== "undefined" ? localStorage.getItem("activeTripId") : null;
     return stored || (trips[0]?.id ?? "");
   });
   const activeTrip = trips.find((t) => t.id === activeTripId) || null;
 
   // Section states
   const [itinerary, setItinerary] = useState(() => {
-    return JSON.parse(localStorage.getItem("itinerary")) || [];
+    const stored = typeof window !== "undefined" ? localStorage.getItem("itinerary") : null;
+    return stored ? JSON.parse(stored) : [];
   });
   const [budget, setBudget] = useState(() => {
-    return JSON.parse(localStorage.getItem("budget")) || { total: 0, expenses: [] };
+    const stored = typeof window !== "undefined" ? localStorage.getItem("budget") : null;
+    return stored ? JSON.parse(stored) : { total: 0, expenses: [] };
   });
   const [packing, setPacking] = useState(() => {
-    return JSON.parse(localStorage.getItem("packing")) || [];
+    const stored = typeof window !== "undefined" ? localStorage.getItem("packing") : null;
+    return stored ? JSON.parse(stored) : [];
   });
   const [journal, setJournal] = useState(() => {
-    return JSON.parse(localStorage.getItem("journal")) || [];
+    const stored = typeof window !== "undefined" ? localStorage.getItem("journal") : null;
+    return stored ? JSON.parse(stored) : [];
   });
 
   // Persist data changes

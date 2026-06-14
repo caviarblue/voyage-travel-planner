@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Voyage — Premium Travel Planner & Journal</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <div class="app-container">
+    
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div>
+        <div class="logo-container">
+          <div class="logo-icon">V</div>
+          <h1 class="logo-text">Voy<span>age</span></h1>
+        </div>
+
+        <nav>
+          <ul class="nav-links">
+            <li class="nav-item">
+              <a class="nav-link active" data-view="dashboard" data-testid="nav-dashboard">
+                <svg viewBox="0 0 24 24" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1"></rect><rect x="14" y="3" width="7" height="5" rx="1"></rect><rect x="14" y="12" width="7" height="9" rx="1"></rect><rect x="3" y="16" width="7" height="5" rx="1"></rect></svg>
+                Dashboard
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" data-view="itinerary" data-testid="nav-itinerary">
+                <svg viewBox="0 0 24 24" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                Itinerary
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" data-view="budget" data-testid="nav-budget">
+                <svg viewBox="0 0 24 24" stroke-width="2"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3v4a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9"></path><path d="M16 14h.01"></path></svg>
+                Budget Tracker
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" data-view="packing" data-testid="nav-packing">
+                <svg viewBox="0 0 24 24" stroke-width="2"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path></svg>
+                Packing Checklist
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" data-view="journal" data-testid="nav-journal">
+                <svg viewBox="0 0 24 24" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+                Travel Journal
+              </a>
+            </li>
+          </ul>
+        </nav>
+
+        <!-- Active Trip Selector -->
+        <div class="sidebar-trip-select">
+          <label for="tripSelector">Active Trip</label>
+          <select id="tripSelector" class="trip-selector-dropdown" data-testid="trip-select">
+            <!-- Dynamic Options -->
+          </select>
+        </div>
+      </div>
+
+      <div class="sidebar-footer">
+        <button class="btn btn-secondary" onclick="app.showAddTripModal()" style="width: 100%;" data-testid="add-trip-btn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          Plan New Trip
+        </button>
+
+        <button id="themeToggleBtn" class="theme-toggle-btn" style="width: 100%;" data-testid="theme-toggle">
+          <!-- Moon SVG -->
+          <svg class="moon-icon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+          <!-- Sun SVG -->
+          <svg class="sun-icon" viewBox="0 0 24 24" style="display: none;"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+          <span>Dark Mode</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      
+      <!-- Premium Hero Banner Header -->
+      <header class="hero-banner">
+        <img id="heroImage" class="hero-img" src="" alt="Travel Banner">
+        <div class="hero-overlay">
+          <span class="trip-badge">Current Trip</span>
+          <h2 id="heroTitle" class="hero-title">Amalfi Coast, Italy</h2>
+          <div class="hero-meta">
+            <span id="heroDates">
+              <svg viewBox="0 0 24 24" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+              Jul 1 - Jul 7, 2026
+            </span>
+            <span>
+              <svg viewBox="0 0 24 24" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+              Budget: <strong id="heroBudgetVal">$2,500</strong>
+            </span>
+          </div>
+        </div>
+      </header>
+
+      <!-- 1. DASHBOARD VIEW -->
+      <section id="dashboardView" class="view-section active">
+        <div class="section-header">
+          <h2 class="section-title">Trip Overview</h2>
+        </div>
+
+        <div class="dashboard-grid">
+          <!-- Left Column: Budget details -->
+          <div class="card budget-overview-card">
+            <div class="budget-stats">
+              <h3 class="card-title">
+                <svg viewBox="0 0 24 24" stroke-width="2"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3v4a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9"></path><path d="M16 14h.01"></path></svg>
+                Financial Budget
+              </h3>
+              <div class="stat-item">
+                <div class="stat-label">Total Allocated</div>
+                <div id="dashTotalBudget" class="stat-value">$2,500</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-label">Total Expenses</div>
+                <div id="dashTotalSpent" class="stat-value">$1,350</div>
+              </div>
+              <div class="stat-item">
+                <div id="dashRemainingText" class="stat-label">Remaining</div>
+                <div id="dashRemainingBudget" class="stat-value">$1,150</div>
+              </div>
+            </div>
+
+            <!-- SVG Animated Circle -->
+            <div class="progress-ring-container">
+              <svg class="progress-ring" width="140" height="140">
+                <circle class="progress-ring-circle-bg" cx="70" cy="70" r="58" />
+                <circle class="progress-ring-circle" cx="70" cy="70" r="58" />
+              </svg>
+              <div class="progress-text">
+                <div id="dashProgressPct" class="progress-pct">0%</div>
+                <div class="progress-lbl">spent</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Packing Summary -->
+          <div class="card">
+            <h3 class="card-title">
+              <svg viewBox="0 0 24 24" stroke-width="2"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path></svg>
+              Packing Progress
+            </h3>
+            <div id="dashPackingText" style="font-size: 0.9rem; font-weight: 600;">0 of 0 packed</div>
+            <div class="packing-progress-bar-container">
+              <div id="dashPackingBar" class="packing-progress-bar"></div>
+            </div>
+            <ul id="dashPackingList" class="dashboard-list">
+              <!-- Dynamically populated checklist -->
+            </ul>
+          </div>
+        </div>
+
+        <!-- Row 2: Today's Events Timeline Widget -->
+        <div class="card">
+          <h3 class="card-title">
+            <svg viewBox="0 0 24 24" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            First Day Activities Preview
+          </h3>
+          <div id="dashActivitiesList" class="upcoming-activities-list">
+            <!-- Dynamic Daily activities widgets -->
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. ITINERARY VIEW -->
+      <section id="itineraryView" class="view-section">
+        <div class="section-header">
+          <h2 class="section-title">Trip Itinerary</h2>
+          <button class="btn btn-primary" onclick="app.showAddActivityModal()" data-testid="addActivityBtn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            Add Activity
+          </button>
+        </div>
+
+        <div class="itinerary-container">
+          <!-- Left Day Selector column -->
+          <div id="itineraryDaysList" class="day-selector-card">
+            <!-- Day tabs -->
+          </div>
+
+          <!-- Right Timeline column -->
+          <div class="card" style="padding: 2rem;">
+            <h3 id="activeDayTitle" class="card-title" style="margin-bottom: 1.5rem;">Day 1 Timeline</h3>
+            <div id="itineraryTimeline" class="timeline">
+              <!-- Dynamically generated timeline items -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. BUDGET VIEW -->
+      <section id="budgetView" class="view-section">
+        <div class="section-header">
+          <h2 class="section-title">Expenses & Budget</h2>
+        </div>
+
+        <div class="budget-grid">
+          <!-- Left Category Progress Bars -->
+          <div class="card">
+            <h3 class="card-title">Category Breakdown</h3>
+            <div style="margin-bottom: 1.5rem;">
+              <span id="budgetSpentPct" style="font-size: 0.9rem; font-weight: 600; color: var(--text-secondary);">0% spent</span>
+            </div>
+            <div id="budgetBreakdown" class="budget-breakdown-list">
+              <!-- Categories list -->
+            </div>
+            
+            <div style="margin-top: 2rem; border-top: 1px solid var(--border-color); padding-top: 1.5rem; display: flex; flex-direction: column; gap: 0.75rem;">
+              <div style="display: flex; justify-content: space-between; font-size: 0.9rem;"><span style="color: var(--text-secondary);">Total Budget</span><strong id="budgetTotalVal">$0</strong></div>
+              <div style="display: flex; justify-content: space-between; font-size: 0.9rem;"><span style="color: var(--text-secondary);">Total Spent</span><strong id="budgetSpentVal">$0</strong></div>
+              <div style="display: flex; justify-content: space-between; font-size: 0.95rem; border-top: 1.5px solid var(--border-color); padding-top: 0.5rem;"><strong>Remaining</strong><strong id="budgetRemainingVal">$0</strong></div>
+            </div>
+          </div>
+
+          <!-- Right Expenses Ledger -->
+          <div class="card expense-table-card">
+            <h3 class="card-title">Ledger & Transaction Log</h3>
+            <div style="overflow-x: auto; margin-top: 1rem;">
+              <table class="expense-table">
+                <thead>
+                  <tr>
+                    <th>Item/Event</th>
+                    <th>Category</th>
+                    <th>Day</th>
+                    <th>Location</th>
+                    <th>Cost</th>
+                  </tr>
+                </thead>
+                <tbody id="expenseTableBody">
+                  <!-- Dynamic rows -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4. PACKING VIEW -->
+      <section id="packingView" class="view-section">
+        <div class="section-header">
+          <h2 class="section-title">Packing Checklists</h2>
+        </div>
+
+        <div id="packingGrid" class="packing-grid">
+          <!-- Dynamically populated packing categories cards -->
+        </div>
+      </section>
+
+      <!-- 5. JOURNAL VIEW -->
+      <section id="journalView" class="view-section">
+        <div class="section-header">
+          <h2 class="section-title">Travel Journal</h2>
+          <button class="btn btn-primary" onclick="app.showAddJournalModal()" data-testid="addJournalBtn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            Write Entry
+          </button>
+        </div>
+
+        <div id="journalGrid" class="journal-grid">
+          <!-- Cards of daily log journals -->
+        </div>
+      </section>
+
+    </main>
+
+  </div>
+
+  <!-- Global Modal Dialog Overlay -->
+  <div id="modalOverlay" class="modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="modalTitle" class="modal-title">Modal Title</h3>
+        <button id="modalCloseBtn" class="modal-close">&times;</button>
+      </div>
+      <div id="modalBody" class="modal-body">
+        <!-- Form elements inserted dynamically -->
+      </div>
+      <div class="modal-footer">
+        <button id="modalCancelBtn" class="btn btn-secondary">Cancel</button>
+        <button id="modalSaveBtn" class="btn btn-primary">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

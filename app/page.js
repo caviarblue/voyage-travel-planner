@@ -1,4 +1,4 @@
-
+"use client";
 import { useState, useEffect } from "react";
 import Sidebar from "./components/Sidebar";
 import HeroBanner from "./components/HeroBanner";

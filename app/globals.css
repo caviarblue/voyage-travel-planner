@@ -1,0 +1,184 @@
+/* Premium HSL‑based design system */
+:root {
+  /* Light theme */
+  --hue-primary: 210;
+  --sat-primary: 60%;
+  --lgt-primary: 50%;
+
+  --bg-light: hsl(210, 30%, 97%);
+  --bg-dark: hsl(210, 30%, 12%);
+
+  --text-light: hsl(210, 10%, 15%);
+  --text-dark: hsl(210, 10%, 90%);
+
+  --glass-bg: rgba(255, 255, 255, 0.12);
+  --glass-blur: 12px;
+  --radius: 12px;
+}
+
+/* Dark mode */
+[data-theme="dark"] {
+  --bg: var(--bg-dark);
+  --text: var(--text-dark);
+}
+
+/* Light mode (default) */
+[data-theme="light"] {
+  --bg: var(--bg-light);
+  --text: var(--text-light);
+}
+
+/* Global resets & typography */
+html,
+body,
+#root,
+#__next {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-outfit), sans-serif;
+}
+
+/* Layout helpers */
+.app-container {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 260px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 1.5rem;
+}
+
+/* Main content */
+.main-content {
+  flex: 1;
+  padding: 2rem;
+}
+
+/* Buttons */
+.btn {
+  padding: 0.6rem 1.2rem;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-weight: 600;
+}
+.btn-primary {
+  background: hsl(var(--hue-primary), var(--sat-primary), var(--lgt-primary));
+  color: white;
+}
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.15);
+  color: var(--text);
+}
+
+/* Sections */
+.section-title {
+  margin-bottom: 1rem;
+  font-size: 1.4rem;
+}
+
+/* Metric cards */
+.metrics-grid {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+.metric-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  padding: 1rem;
+  border-radius: var(--radius);
+  text-align: center;
+}
+
+/* Circular progress */
+.circular-progress {
+  width: 80px;
+  height: 80px;
+}
+.circular-progress .bg {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.15);
+  stroke-width: 3.8;
+}
+.circular-progress .progress {
+  fill: none;
+  stroke: hsl(var(--hue-primary), var(--sat-primary), var(--lgt-primary));
+  stroke-width: 3.8;
+  stroke-linecap: round;
+}
+.circular-progress .percentage {
+  font-size: 0.9rem;
+  fill: var(--text);
+}
+
+/* Horizontal bar */
+.horizontal-bar {
+  width: 100%;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.horizontal-bar .filled {
+  height: 100%;
+  background: hsl(var(--hue-primary), var(--sat-primary), var(--lgt-primary));
+}
+
+/* Packing checklist */
+.packing-list {
+  list-style: none;
+  padding: 0;
+}
+.packing-list li {
+  margin-bottom: 0.5rem;
+}
+
+/* Journal */
+.journal-entries {
+  list-style: none;
+  padding: 0;
+}
+.journal-entry {
+  padding: 0.8rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+.journal-date {
+  font-size: 0.85rem;
+  opacity: 0.7;
+}
+
+/* Modal (minimal) */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+.modal-content {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  border-radius: var(--radius);
+  max-width: 500px;
+  width: 90%;
+  padding: 1.5rem;
+}
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.modal-body {
+  margin-top: 1rem;
+}

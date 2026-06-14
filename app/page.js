@@ -1,4 +1,3 @@
-// app/page.js
 "use client";
 import { useState, useEffect } from "react";
 import Sidebar from "./components/Sidebar";
@@ -60,6 +59,9 @@ export default function Home() {
   useEffect(() => {
     localStorage.setItem("journal", JSON.stringify(journal));
   }, [journal]);
+  useEffect(() => {
+    localStorage.setItem("theme", theme);
+  }, [theme]);
 
   const handleAddTrip = () => {
     const newTrip = {
@@ -72,7 +74,7 @@ export default function Home() {
   };
 
   return (
-    <div className={`app-container ${theme}`}>
+    <div className={`app-container ${theme}`} data-theme={theme}>
       <Sidebar
         currentView={currentView}
         setCurrentView={setCurrentView}

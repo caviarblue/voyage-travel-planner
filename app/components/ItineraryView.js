@@ -4,9 +4,9 @@ import { useState } from "react";
 function getDayCount(startDate, endDate) {
   if (!startDate) return 1;
   if (!endDate) return 1;
-  const start = new Date(startDate);
-  const end = new Date(endDate);
-  const diff = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
+  const diff = Math.ceil(
+    (new Date(endDate) - new Date(startDate)) / (1000 * 60 * 60 * 24)
+  ) + 1;
   return diff > 0 ? diff : 1;
 }
 
@@ -14,31 +14,72 @@ function formatDate(startDate, dayIndex) {
   if (!startDate) return `Day ${dayIndex + 1}`;
   const date = new Date(startDate);
   date.setDate(date.getDate() + dayIndex);
-  return date.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+  return date.toLocaleDateString("en-US", {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+  });
+}
+
+// Sort activities by start time
+function sortByTime(items) {
+  return [...items].sort((a, b) => {
+    if (!a.startTime) return 1;
+    if (!b.startTime) return -1;
+    return a.startTime.localeCompare(b.startTime);
+  });
 }
 
 export default function ItineraryView({ itinerary, setItinerary, activeTrip }) {
   const dayCount = getDayCount(activeTrip?.startDate, activeTrip?.endDate);
   const [activeDay, setActiveDay] = useState(0);
-  const [newItem, setNewItem] = useState("");
+  const [form, setForm] = useState({ title: "", startTime: "", endTime: "" });
+  const [editId, setEditId] = useState(null); // id of item being edited
 
-  const dayItems = itinerary[String(activeDay)] || [];
+  const dayItems = sortByTime(itinerary[String(activeDay)] || []);
+
+  const resetForm = () => setForm({ title: "", startTime: "", endTime: "" });
 
   const addItem = () => {
-    if (!newItem.trim()) return;
-    const item = { id: Date.now(), title: newItem.trim() };
+    if (!form.title.trim()) return;
+    const item = {
+      id: Date.now(),
+      title: form.title.trim(),
+      startTime: form.startTime,
+      endTime: form.endTime,
+    };
     setItinerary({
       ...itinerary,
-      [String(activeDay)]: [...dayItems, item],
+      [String(activeDay)]: [...(itinerary[String(activeDay)] || []), item],
     });
-    setNewItem("");
+    resetForm();
   };
 
   const removeItem = (id) => {
     setItinerary({
       ...itinerary,
-      [String(activeDay)]: dayItems.filter((i) => i.id !== id),
+      [String(activeDay)]: (itinerary[String(activeDay)] || []).filter(
+        (i) => i.id !== id
+      ),
     });
+  };
+
+  const startEdit = (item) => {
+    setEditId(item.id);
+    setForm({ title: item.title, startTime: item.startTime || "", endTime: item.endTime || "" });
+  };
+
+  const saveEdit = () => {
+    setItinerary({
+      ...itinerary,
+      [String(activeDay)]: (itinerary[String(activeDay)] || []).map((i) =>
+        i.id === editId
+          ? { ...i, title: form.title.trim(), startTime: form.startTime, endTime: form.endTime }
+          : i
+      ),
+    });
+    setEditId(null);
+    resetForm();
   };
 
   if (!activeTrip) {
@@ -61,7 +102,7 @@ export default function ItineraryView({ itinerary, setItinerary, activeTrip }) {
           <button
             key={i}
             className={`day-tab ${activeDay === i ? "active" : ""}`}
-            onClick={() => setActiveDay(i)}
+            onClick={() => { setActiveDay(i); setEditId(null); resetForm(); }}
           >
             <span className="day-tab-label">Day {i + 1}</span>
             <span className="day-tab-date">{formatDate(activeTrip.startDate, i)}</span>
@@ -69,39 +110,137 @@ export default function ItineraryView({ itinerary, setItinerary, activeTrip }) {
         ))}
       </div>
 
-      {/* Items for the active day */}
+      {/* Day content */}
       <div className="day-content">
         <h3 className="day-heading">
           Day {activeDay + 1} · {formatDate(activeTrip.startDate, activeDay)}
-          <span className="day-count-badge">{dayItems.length} item{dayItems.length !== 1 ? "s" : ""}</span>
+          <span className="day-count-badge">
+            {dayItems.length} item{dayItems.length !== 1 ? "s" : ""}
+          </span>
         </h3>
 
         {dayItems.length === 0 && (
           <p className="empty-state">No activities planned for this day yet.</p>
         )}
 
-        <ul className="itinerary-items">
+        {/* Activity timeline */}
+        <ul className="itinerary-timeline">
           {dayItems.map((item, idx) => (
-            <li key={item.id} className="itinerary-item">
-              <span className="item-number">{idx + 1}</span>
-              <span className="item-title">{item.title}</span>
-              <button className="remove-btn" onClick={() => removeItem(item.id)} aria-label="Remove">✕</button>
+            <li key={item.id} className="timeline-item">
+              {/* Time column */}
+              <div className="timeline-time">
+                {item.startTime ? (
+                  <>
+                    <span className="time-start">{item.startTime}</span>
+                    {item.endTime && (
+                      <>
+                        <span className="time-divider">–</span>
+                        <span className="time-end">{item.endTime}</span>
+                      </>
+                    )}
+                  </>
+                ) : (
+                  <span className="time-none">—</span>
+                )}
+              </div>
+
+              {/* Arrow */}
+              <div className="timeline-arrow">→</div>
+
+              {/* Activity */}
+              {editId === item.id ? (
+                /* Inline edit row */
+                <div className="timeline-edit">
+                  <input
+                    type="time"
+                    className="form-input time-input"
+                    value={form.startTime}
+                    onChange={(e) => setForm({ ...form, startTime: e.target.value })}
+                  />
+                  <input
+                    type="time"
+                    className="form-input time-input"
+                    value={form.endTime}
+                    onChange={(e) => setForm({ ...form, endTime: e.target.value })}
+                  />
+                  <input
+                    type="text"
+                    className="form-input"
+                    style={{ flex: 1 }}
+                    value={form.title}
+                    onChange={(e) => setForm({ ...form, title: e.target.value })}
+                    onKeyDown={(e) => e.key === "Enter" && saveEdit()}
+                    autoFocus
+                  />
+                  <button className="btn btn-primary" style={{ flexShrink: 0 }} onClick={saveEdit}>
+                    Save
+                  </button>
+                  <button className="btn btn-secondary" style={{ flexShrink: 0 }} onClick={() => { setEditId(null); resetForm(); }}>
+                    ✕
+                  </button>
+                </div>
+              ) : (
+                <div className="timeline-body">
+                  <span className="timeline-index">{idx + 1}</span>
+                  <span className="timeline-title">{item.title}</span>
+                  <div className="timeline-actions">
+                    <button className="icon-btn" onClick={() => startEdit(item)} aria-label="Edit">✏️</button>
+                    <button className="icon-btn danger" onClick={() => removeItem(item.id)} aria-label="Remove">✕</button>
+                  </div>
+                </div>
+              )}
             </li>
           ))}
         </ul>
 
-        <div className="add-item">
-          <input
-            type="text"
-            className="form-input"
-            placeholder="e.g. Visit Eiffel Tower, Lunch at..."
-            value={newItem}
-            onChange={(e) => setNewItem(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && addItem()}
-            style={{ flex: 1 }}
-          />
-          <button className="btn btn-primary" onClick={addItem}>+ Add</button>
-        </div>
+        {/* Add new activity */}
+        {editId === null && (
+          <div className="add-activity-row">
+            <div className="add-activity-times">
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label className="form-label">Start</label>
+                <input
+                  type="time"
+                  className="form-input time-input"
+                  value={form.startTime}
+                  onChange={(e) => setForm({ ...form, startTime: e.target.value })}
+                />
+              </div>
+              <div className="add-activity-dash">–</div>
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label className="form-label">End</label>
+                <input
+                  type="time"
+                  className="form-input time-input"
+                  value={form.endTime}
+                  onChange={(e) => setForm({ ...form, endTime: e.target.value })}
+                />
+              </div>
+            </div>
+
+            <div className="add-activity-title">
+              <div className="form-group" style={{ marginBottom: 0, flex: 1 }}>
+                <label className="form-label">Activity</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  placeholder="e.g. Visit Eiffel Tower, Lunch at..."
+                  value={form.title}
+                  onChange={(e) => setForm({ ...form, title: e.target.value })}
+                  onKeyDown={(e) => e.key === "Enter" && addItem()}
+                />
+              </div>
+              <button
+                className="btn btn-primary"
+                onClick={addItem}
+                style={{ alignSelf: "flex-end", flexShrink: 0 }}
+                disabled={!form.title.trim()}
+              >
+                + Add
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </section>
   );

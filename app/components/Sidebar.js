@@ -1,5 +1,3 @@
-import { CURRENCIES } from "../utils/currency";
-
 export default function Sidebar({
   currentView,
   setCurrentView,
@@ -9,7 +7,6 @@ export default function Sidebar({
   theme,
   setTheme,
   currency,
-  setCurrency,
   onAddTripClick,
   onDeleteTrip,
   hasTrips,
@@ -24,7 +21,7 @@ export default function Sidebar({
   ];
 
   const visibleLinks = allNavLinks.filter((l) => l.alwaysShow || hasTrips);
-  const activeTrip = trips.find((t) => t.id === activeTripId);
+  const activeTrip   = trips.find((t) => t.id === activeTripId);
 
   return (
     <aside className="sidebar">
@@ -52,7 +49,7 @@ export default function Sidebar({
         </ul>
       </nav>
 
-      {/* Trip selector — only when trips exist */}
+      {/* Trip selector */}
       {hasTrips && (
         <div className="sidebar-trip-select">
           <label htmlFor="tripSelector">Active Trip</label>
@@ -72,11 +69,16 @@ export default function Sidebar({
           {activeTrip && (
             <div className="trip-meta">
               {activeTrip.startDate && (
-                <span>📅 {activeTrip.startDate}{activeTrip.endDate ? ` → ${activeTrip.endDate}` : ""}</span>
+                <span>
+                  📅 {activeTrip.startDate}
+                  {activeTrip.endDate ? ` → ${activeTrip.endDate}` : ""}
+                </span>
               )}
               {activeTrip.baseBudget > 0 && (
                 <span>💵 {activeTrip.baseBudget.toLocaleString()} {currency}</span>
               )}
+              {/* Show the locked currency for this trip */}
+              <span className="trip-meta-currency">🔒 {currency}</span>
             </div>
           )}
 
@@ -93,27 +95,20 @@ export default function Sidebar({
         </div>
       )}
 
-      {/* Currency selector */}
-      <div className="sidebar-currency-select">
-        <label htmlFor="currencySelector">Currency</label>
-        <select
-          id="currencySelector"
-          className="trip-selector-dropdown"
-          value={currency}
-          onChange={(e) => setCurrency(e.target.value)}
-        >
-          {CURRENCIES.map((c) => (
-            <option key={c.code} value={c.code}>{c.label}</option>
-          ))}
-        </select>
-      </div>
-
       {/* Footer */}
       <div className="sidebar-footer">
-        <button className="btn btn-secondary" onClick={onAddTripClick} style={{ width: "100%" }}>
+        <button
+          className="btn btn-secondary"
+          onClick={onAddTripClick}
+          style={{ width: "100%" }}
+        >
           ➕ Plan New Trip
         </button>
-        <button onClick={toggleTheme} className="theme-toggle-btn" style={{ width: "100%" }}>
+        <button
+          onClick={toggleTheme}
+          className="theme-toggle-btn"
+          style={{ width: "100%" }}
+        >
           {theme === "dark" ? "☀️ Light Mode" : "🌙 Dark Mode"}
         </button>
       </div>

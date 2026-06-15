@@ -6,17 +6,20 @@ import DashboardView from "./components/DashboardView";
 import ItineraryView from "./components/ItineraryView";
 import BudgetView from "./components/BudgetView";
 import PackingView from "./components/PackingView";
+import { CURRENCIES } from "./utils/currency";
+
+const DEFAULT_BUDGET = { baseline: 0, expenses: [] };
 
 export default function Home() {
-  const [theme, setTheme] = useState("light");
-  const [currentView, setCurrentView] = useState("dashboard");
-
-  // Currency — default IDR
-  const [currency, setCurrency] = useState(() => {
-    return typeof window !== "undefined"
-      ? (localStorage.getItem("currency") || "IDR")
-      : "IDR";
-  });
+  // Server-safe initial state (no localStorage reads)
+  const [mounted, setMounted]           = useState(false);
+  const [theme, setTheme]               = useState("light");
+  const [currentView, setCurrentView]   = useState("dashboard");
+  const [trips, setTrips]               = useState([]);
+  const [activeTripId, setActiveTripId] = useState("");
+  const [itinerary, setItinerary]       = useState({});
+  const [budget, setBudget]             = useState(DEFAULT_BUDGET);
+  const [packing, setPacking]           = useState([]);
 
   // New Trip Modal
   const [showNewTripModal, setShowNewTripModal] = useState(false);
@@ -25,74 +28,74 @@ export default function Home() {
     startDate: "",
     endDate: "",
     baseBudget: "",
+    currency: "IDR", // default, always choosable per trip
   });
 
-  // Trips
-  const [trips, setTrips] = useState(() => {
-    const stored = typeof window !== "undefined" ? localStorage.getItem("trips") : null;
-    return stored ? JSON.parse(stored) : [];
-  });
-  const [activeTripId, setActiveTripId] = useState(() => {
-    const stored = typeof window !== "undefined" ? localStorage.getItem("activeTripId") : null;
-    return stored || (trips[0]?.id ?? "");
-  });
+  // ── Hydrate from localStorage on mount ────────────────────────────────
+  useEffect(() => {
+    try {
+      const t = localStorage.getItem("theme");
+      if (t) setTheme(t);
+
+      const savedTrips = localStorage.getItem("trips");
+      const parsedTrips = savedTrips ? JSON.parse(savedTrips) : [];
+      setTrips(parsedTrips);
+
+      const savedActiveId = localStorage.getItem("activeTripId");
+      setActiveTripId(savedActiveId || parsedTrips[0]?.id || "");
+
+      const savedItin = localStorage.getItem("itinerary");
+      if (savedItin) {
+        const p = JSON.parse(savedItin);
+        setItinerary(Array.isArray(p) ? {} : p);
+      }
+
+      const savedBudget = localStorage.getItem("budget");
+      if (savedBudget) {
+        const p = JSON.parse(savedBudget);
+        setBudget(!p.baseline && !p.expenses?.[0]?.category ? DEFAULT_BUDGET : p);
+      }
+
+      const savedPacking = localStorage.getItem("packing");
+      if (savedPacking) setPacking(JSON.parse(savedPacking));
+    } catch (e) {
+      console.warn("Failed to load from localStorage:", e);
+    }
+    setMounted(true);
+  }, []);
+
+  // ── Persist ────────────────────────────────────────────────────────────
+  useEffect(() => { if (mounted) localStorage.setItem("theme", theme); }, [theme, mounted]);
+  useEffect(() => { if (mounted) localStorage.setItem("trips", JSON.stringify(trips)); }, [trips, mounted]);
+  useEffect(() => { if (mounted) localStorage.setItem("activeTripId", activeTripId); }, [activeTripId, mounted]);
+  useEffect(() => { if (mounted) localStorage.setItem("itinerary", JSON.stringify(itinerary)); }, [itinerary, mounted]);
+  useEffect(() => { if (mounted) localStorage.setItem("budget", JSON.stringify(budget)); }, [budget, mounted]);
+  useEffect(() => { if (mounted) localStorage.setItem("packing", JSON.stringify(packing)); }, [packing, mounted]);
+
+  // ── Derived ────────────────────────────────────────────────────────────
   const activeTrip = trips.find((t) => t.id === activeTripId) || null;
-  const hasTrips = trips.length > 0;
+  const hasTrips   = trips.length > 0;
 
-  // Itinerary: { "0": [{id,title}], "1": [...] }
-  const [itinerary, setItinerary] = useState(() => {
-    const stored = typeof window !== "undefined" ? localStorage.getItem("itinerary") : null;
-    if (stored) {
-      const parsed = JSON.parse(stored);
-      if (Array.isArray(parsed)) return {};
-      return parsed;
-    }
-    return {};
-  });
+  // Currency comes from the active trip — locked at creation, changes when switching trips
+  const currency = activeTrip?.currency || "IDR";
 
-  // Budget: { baseline, expenses: [{id, name, amount, category}] }
-  const [budget, setBudget] = useState(() => {
-    const stored = typeof window !== "undefined" ? localStorage.getItem("budget") : null;
-    if (stored) {
-      const parsed = JSON.parse(stored);
-      if (!parsed.baseline && !parsed.expenses?.[0]?.category) return { baseline: 0, expenses: [] };
-      return parsed;
-    }
-    return { baseline: 0, expenses: [] };
-  });
-
-  // Packing
-  const [packing, setPacking] = useState(() => {
-    const stored = typeof window !== "undefined" ? localStorage.getItem("packing") : null;
-    return stored ? JSON.parse(stored) : [];
-  });
-
-  // Persist
-  useEffect(() => { localStorage.setItem("trips", JSON.stringify(trips)); }, [trips]);
-  useEffect(() => { localStorage.setItem("activeTripId", activeTripId); }, [activeTripId]);
-  useEffect(() => { localStorage.setItem("itinerary", JSON.stringify(itinerary)); }, [itinerary]);
-  useEffect(() => { localStorage.setItem("budget", JSON.stringify(budget)); }, [budget]);
-  useEffect(() => { localStorage.setItem("packing", JSON.stringify(packing)); }, [packing]);
-  useEffect(() => { localStorage.setItem("theme", theme); }, [theme]);
-  useEffect(() => { localStorage.setItem("currency", currency); }, [currency]);
-
-  // If trip is deleted and we're on a hidden view, go back to dashboard
+  // Snap back to dashboard when all trips are deleted
   useEffect(() => {
     if (!hasTrips && currentView !== "dashboard") setCurrentView("dashboard");
   }, [hasTrips, currentView]);
 
-  // Open create modal
+  // ── Trip actions ───────────────────────────────────────────────────────
   const handleAddTripClick = () => {
     setNewTripForm({
       destination: "",
       startDate: new Date().toISOString().split("T")[0],
       endDate: "",
       baseBudget: "",
+      currency: "IDR", // fresh default every time
     });
     setShowNewTripModal(true);
   };
 
-  // Confirm create trip
   const handleCreateTrip = () => {
     if (!newTripForm.destination.trim()) return;
     const newTrip = {
@@ -101,25 +104,36 @@ export default function Home() {
       startDate: newTripForm.startDate,
       endDate: newTripForm.endDate,
       baseBudget: parseFloat(newTripForm.baseBudget) || 0,
+      currency: newTripForm.currency || "IDR", // locked to this trip forever
     };
-    setTrips([...trips, newTrip]);
+    setTrips((prev) => [...prev, newTrip]);
     setActiveTripId(newTrip.id);
     setBudget({ baseline: newTrip.baseBudget, expenses: [] });
     setItinerary({});
     setShowNewTripModal(false);
   };
 
-  // Delete active trip
   const handleDeleteTrip = (tripId) => {
     const remaining = trips.filter((t) => t.id !== tripId);
     setTrips(remaining);
     if (activeTripId === tripId) {
       setActiveTripId(remaining[0]?.id ?? "");
-      setBudget({ baseline: 0, expenses: [] });
+      setBudget(DEFAULT_BUDGET);
       setItinerary({});
       setPacking([]);
     }
   };
+
+  // ── Loading guard ──────────────────────────────────────────────────────
+  if (!mounted) {
+    return (
+      <div className="app-container light" data-theme="light">
+        <div className="app-loading">
+          <div className="app-loading-spinner" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`app-container ${theme}`} data-theme={theme}>
@@ -132,7 +146,6 @@ export default function Home() {
         theme={theme}
         setTheme={setTheme}
         currency={currency}
-        setCurrency={setCurrency}
         onAddTripClick={handleAddTripClick}
         onDeleteTrip={handleDeleteTrip}
         hasTrips={hasTrips}
@@ -183,6 +196,7 @@ export default function Home() {
             </div>
 
             <div className="modal-body">
+              {/* Destination */}
               <div className="form-group">
                 <label className="form-label" htmlFor="tripDestination">Destination</label>
                 <input
@@ -197,6 +211,7 @@ export default function Home() {
                 />
               </div>
 
+              {/* Dates */}
               <div className="form-row">
                 <div className="form-group">
                   <label className="form-label" htmlFor="tripStart">Start Date</label>
@@ -221,15 +236,34 @@ export default function Home() {
                 </div>
               </div>
 
+              {/* Currency — always choosable, locked to THIS trip once created */}
+              <div className="form-group">
+                <label className="form-label" htmlFor="tripCurrency">
+                  Currency
+                  <span className="form-label-note">— locked to this trip after creation</span>
+                </label>
+                <select
+                  id="tripCurrency"
+                  className="form-input"
+                  value={newTripForm.currency}
+                  onChange={(e) => setNewTripForm({ ...newTripForm, currency: e.target.value })}
+                >
+                  {CURRENCIES.map((c) => (
+                    <option key={c.code} value={c.code}>{c.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Baseline budget */}
               <div className="form-group">
                 <label className="form-label" htmlFor="tripBudget">
-                  Baseline Budget ({currency})
+                  Baseline Budget ({newTripForm.currency})
                 </label>
                 <input
                   id="tripBudget"
                   type="number"
                   className="form-input"
-                  placeholder={currency === "IDR" ? "e.g. 5000000" : "e.g. 3000"}
+                  placeholder={newTripForm.currency === "IDR" ? "e.g. 5000000" : "e.g. 3000"}
                   min="0"
                   value={newTripForm.baseBudget}
                   onChange={(e) => setNewTripForm({ ...newTripForm, baseBudget: e.target.value })}
@@ -238,7 +272,9 @@ export default function Home() {
             </div>
 
             <div className="modal-footer">
-              <button className="btn btn-secondary" onClick={() => setShowNewTripModal(false)}>Cancel</button>
+              <button className="btn btn-secondary" onClick={() => setShowNewTripModal(false)}>
+                Cancel
+              </button>
               <button
                 className="btn btn-primary"
                 onClick={handleCreateTrip}
